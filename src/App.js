@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./App.css";
 import AddExpense from "./components/AddExpense";
 import ExpenseList from "./components/ExpenseList";
-import ExpenseChart from "./components/ExpenseChart";
+import ExpenseChart from "./components/Chart";
 
 export function App() {
   const [expenses, setExpenses] = useState([]);
