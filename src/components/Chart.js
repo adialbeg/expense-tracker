@@ -1,35 +1,48 @@
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import { Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { systemLog } from "../systemLog";
+
 export default function ExpenseChart({ expenses }) {
-  const data = Object.values(
-    expenses.reduce((acc, e) => {
-      if (!acc[e.category]) acc[e.category] = { name: e.category, value: 0 };
-      acc[e.category].value += e.amount;
-      return acc;
-    }, {})
-  );
+  if (!expenses.length) {
+    systemLog.warn("Chart not rendered: no expenses yet");
+    return <p>No data to display</p>;
+  }
 
-  const COLORS = ["#4f46e5", "#16a34a", "#f97316", "#e11d48", "#0891b2"];
+  // Group expenses by category
+  const categoryTotals = expenses.reduce((acc, exp) => {
+    acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
+    return acc;
+  }, {});
 
-  if (data.length === 0)
-    return (
-      <div className="chart empty">
-        <p>No data yet — add an expense to see your chart.</p>
-      </div>
-    );
+  const data = Object.keys(categoryTotals).map((key) => ({
+    name: key,
+    value: categoryTotals[key],
+  }));
+
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#B266FF"];
+
+  systemLog.info("Rendering expense chart");
 
   return (
-    <div className="chart">
-      <h2>Spending by Category</h2>
-      <PieChart width={300} height={300}>
-        <Pie data={data} cx="50%" cy="50%" outerRadius={100} dataKey="value" label>
-          {data.map((_, i) => (
-            <Cell key={i} fill={COLORS[i % COLORS.length]} />
-          ))}
-        </Pie>
-        <Tooltip />
-        <Legend />
-      </PieChart>
+    <div style={{ width: "100%", height: 300 }}>
+      <ResponsiveContainer>
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            outerRadius={100}
+            fill="#8884d8"
+            dataKey="value"
+            label={({ name, value }) => `${name}: ₪${value}`}
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
     </div>
   );
 }

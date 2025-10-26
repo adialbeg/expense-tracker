@@ -1,40 +1,77 @@
 import { useState } from "react";
+import { systemLog } from "../systemLog";
 
 export default function AddExpense({ onAdd }) {
-  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("Food");
+
+  // sanitize only description
+  const cleanDescription = (text) =>
+    text.replace(/[<>]/g, "").replace(/script/gi, "").trim();
+
+  // predefined category options
+  const categories = [
+    "Food",
+    "Transport",
+    "Shopping",
+    "Bills",
+    "Entertainment",
+    "Health",
+    "Other",
+  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name || !amount) return;
-    onAdd({ name, amount: parseFloat(amount), category });
-    setName("");
+
+    const safeDescription = cleanDescription(description);
+    const safeAmount = parseFloat(amount);
+
+    if (!safeDescription || !category || isNaN(safeAmount) || safeAmount <= 0) {
+      alert("Please enter a valid description, category, and amount");
+      systemLog.warn("Invalid input", { description, category, amount });
+      return;
+    }
+
+    onAdd({
+      description: safeDescription,
+      category,
+      amount: safeAmount,
+      date: new Date().toLocaleDateString(),
+    });
+
+    systemLog.info("Expense added", { safeDescription, category, safeAmount });
+
+    setDescription("");
+    setCategory("");
     setAmount("");
   };
 
   return (
-    <form className="form" onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit}>
       <input
-        type="text"
-        placeholder="Expense name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        placeholder="Enter description"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
       />
+
+      <select value={category} onChange={(e) => setCategory(e.target.value)}>
+        <option value="">Select category</option>
+        {categories.map((cat) => (
+          <option key={cat} value={cat}>
+            {cat}
+          </option>
+        ))}
+      </select>
+
       <input
+        placeholder="Enter amount"
         type="number"
-        placeholder="Amount"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
       />
-      <select value={category} onChange={(e) => setCategory(e.target.value)}>
-        <option>Food</option>
-        <option>Transport</option>
-        <option>Entertainment</option>
-        <option>Shopping</option>
-        <option>Other</option>
-      </select>
-      <button type="submit">Add</button>
+
+      <button type="submit">Add Expense</button>
     </form>
   );
 }

@@ -10,11 +10,11 @@ export default function ExpenseList({ expenses }) {
             <span>
               {e.name} <small>({e.category})</small>
             </span>
-            <span>${e.amount.toFixed(2)}</span>
+            <span>₪{e.amount.toFixed(2)}</span>
           </li>
         ))}
       </ul>
-      <h3>Total: ${total.toFixed(2)}</h3>
+      <h3>Total: ₪{total.toFixed(2)}</h3>
     </div>
   );
 }
